@@ -12,6 +12,7 @@ My Flight Path 2029 tracker: Arduino → ESP32 → ROS 2 → drones → a resear
 Built on the same app as the public Rihito's Journal IOI (RIHITOS-JOURNAL-IOI); only `data/journal.js` differs.
 
 - Open `index.html`, or the GitHub Pages site for this repo.
+- On phones and tablets a lighter mode switches on by itself (no blur, lighter 3D background), so it stays smooth.
 - Progress syncs between my devices through a private Gist: **Console → Sync** (see `docs/SYNC.md`).
 - Change dates, targets and items in **Console**, or edit `data/journal.js`.
 - `python tools/build.py --cdn` makes the single-file version used for the artifact version.

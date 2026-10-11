@@ -1,5 +1,4 @@
 [hidden]{display:none!important}
-[hidden]{display:none!important}
 /* Layout: a live WebGL flight scene fills the viewport (a drone flying a 7-waypoint path, one ring per phase);
    every view is a frosted glass layer floating over it. Minimal chrome, huge display type, mono captions. */
 :root{
@@ -1000,3 +999,4 @@ a{text-decoration-color:color-mix(in srgb,var(--blue) 60%,transparent)}
 :root[data-theme="light"] .lx-streaks i::after{background:linear-gradient(180deg,transparent,#0091b3)!important}
 :root[data-theme="light"] .bw.t-black{--glass:rgba(12,11,16,.72)}
 :root[data-theme="light"] .bw.t-red{--glass:rgba(206,22,36,.7)}
+.pt-searchbar{background:color-mix(in srgb,var(--bg) 88%,transparent)!important;-webkit-backdrop-filter:blur(14px)!important;backdrop-filter:blur(14px)!important}

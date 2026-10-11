@@ -24,6 +24,7 @@ const TEXT={
   manifesto:"More than tutorials, more than parts, more than a degree. A public record of things that fly, measured, logged and shared, one gate at a time.",
   applyEyebrow:"Masters abroad · Sep / Oct 2029 entry",
   applyLede:"Japan is the main target, with China and Russia as parallel routes. Dates come from the 2026–27 cycles; check each official page every spring, because they shift slightly each year.",
+  missionIntro:"<b>Flight Path 2029</b> is my plan inside this journal: every phase, gate and deadline from a first Arduino build to a research Masters in Japan.",
   footer:"Flight Path 2029<br>Dhaka → Tokyo · 2026–2029",
   communityNote:`<b>If you ever want people in person:</b> Bangladesh Flying Labs in Dhanmondi runs drone workshops and meetups, your university's IEEE student branch may have a Robotics and Automation Society chapter, and in Japan the ROS Japan Users Group and the Robotics Society of Japan hold regular events. Discord invites change often, so join them from each project's official site or forum.`,
   credNote:`<b>Left out on purpose:</b> Coursera, Udemy and other certificates of completion; GRE (not needed for Japan, China or Russia); Linux Foundation LFCS and Python Institute exams (real exams, but low weight for a robotics research Masters). Providers change their programmes, so re-check each page before you pay.`
@@ -31,8 +32,8 @@ const TEXT={
 
 /* ---------- the three gauges on Mission ---------- */
 const COUNTDOWNS=[
-  {label:"Days to MEXT application",date:"2028-04-15",hard:1},
-  {label:"Days to Open Doors",date:"2028-11-02"},
+  {label:"Days to MEXT application (estimate)",date:"2028-04-15",hard:1},
+  {label:"Days to Open Doors (estimate)",date:"2028-11-02"},
   {label:"Days to graduation",date:"2029-07-31"}
 ];
 

@@ -6,7 +6,7 @@
 <title>Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&family=Montserrat:wght@800;900&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&family=Montserrat:wght@800;900&display=swap">
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/daily.css">
 </head>
@@ -39,6 +39,7 @@
 </div>
 
 <main class="wrap">
+  <div class="demo-bar" id="demo-bar" hidden><span data-t="demoNote"></span><button type="button" class="btn-pill" data-go="start">Start your journey</button></div>
   <div id="readonly" class="notice glass" hidden>You're viewing this tracker read-only. Only its owner can change progress.</div>
 
   <section class="view" id="view-home">
@@ -67,7 +68,7 @@
         <div class="hm-rail" id="deck"></div>
       </div>
       <div class="hm-hud" id="hm-hud">
-        <span class="hm-hint"><i aria-hidden="true"></i>Scroll to browse</span>
+        <details class="hm-legend"><summary aria-label="How to read a card">?</summary><div class="hm-legend-box"><b>How to read a card</b><ul><li><b>Top left</b>: what kind of page it is. <b>Top right</b>: a live number from that page.</li><li><b>The two moves</b>: what the page does for you, each with a live count.</li><li><b>Weakness</b>: what usually derails it. <b>Resistance</b>: what it protects you from. <b>Retreat</b>: the time it costs.</li><li><b>ex</b> marks the core pages. Tap a card to open its page.</li></ul></div></details><span class="hm-hint"><i aria-hidden="true"></i>Scroll to browse</span>
         <span class="hm-count" id="hm-count">01 / 12</span>
         <span class="hm-prog" aria-hidden="true"><i id="hm-prog"></i></span>
       </div>
@@ -75,6 +76,7 @@
   </section>
 
   <section class="view" id="view-mission" hidden>
+    <p class="mission-intro" data-t="missionIntro"></p>
     <div class="jj-hero">
       <div class="cap-row"><span data-t="capLeft"></span><span id="cap-now"></span><span data-t="capRight"></span></div>
       <h1 class="name" data-t="heroName"></h1>
@@ -253,7 +255,7 @@
   </section>
 
   <section class="view" id="view-cred" hidden>
-    <div class="view-head"><div class="eyebrow">Skill-evaluated only</div><h1>Credentials</h1><p>Only certifications earned through a proctored exam or a graded project. For a research Masters, committees weigh research, projects and recommendation letters far above certificates, so this list is short on purpose.</p></div>
+    <div class="view-head"><div class="eyebrow">Skill-evaluated only</div><h1>Credentials</h1><p data-t="credLede">Only certifications earned through a proctored exam or a graded project. For a research Masters, committees weigh research, projects and recommendation letters far above certificates, so this list is short on purpose.</p></div>
     <div id="cred"></div>
   </section>
 
@@ -263,12 +265,12 @@
   </section>
 
   <section class="view" id="view-skills" hidden>
-    <div class="view-head"><div class="eyebrow">Just-in-time learning</div><h1>Side skills</h1><p>Mechanics, airflow, heat, power, PCB design, colour, typography, markets. You don't study these up front. Each one is tied to the project where you'll first need it, and you learn just enough to finish that project, inside its hours. They're also in the tracker as K items.</p></div>
+    <div class="view-head"><div class="eyebrow">Just-in-time learning</div><h1>Side skills</h1><p data-t="skillsLede">Mechanics, airflow, heat, power, PCB design, colour, typography, markets. You don't study these up front. Each one is tied to the project where you'll first need it, and you learn just enough to finish that project, inside its hours. They're also in the tracker as K items.</p></div>
     <div id="skills"></div>
   </section>
 
   <section class="view" id="view-community" hidden>
-    <div class="view-head"><div class="eyebrow">Your specialists</div><h1>Community</h1><p>Aerodynamicists, PCB designers, flight-controller developers and designers answer questions every day in these places. Join the few that match your current phase, read before you ask, and answer what you can: a visible history of helpful answers is part of your portfolio too.</p></div>
+    <div class="view-head"><div class="eyebrow">Your specialists</div><h1>Community</h1><p data-t="commLede">Aerodynamicists, PCB designers, flight-controller developers and designers answer questions every day in these places. Join the few that match your current phase, read before you ask, and answer what you can: a visible history of helpful answers is part of your portfolio too.</p></div>
     <div id="community"></div>
   </section>
 
@@ -304,9 +306,9 @@
   </div>
 </aside>
 
-<script src="vendor/three.min.js"></script>
-<script src="data/journal.js"></script>
-<script src="js/custom.js"></script>
-<script src="js/app.js"></script>
+<script defer src="vendor/three.min.js"></script>
+<script defer src="data/journal.js"></script>
+<script defer src="js/custom.js"></script>
+<script defer src="js/app.js"></script>
 </body>
 </html>

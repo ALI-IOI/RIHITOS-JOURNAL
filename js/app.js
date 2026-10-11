@@ -1,6 +1,9 @@
 /* Journal app: all logic. Content lives in data/*.js */
 "use strict";
 (() => {
+const TOUCH=matchMedia("(hover: none) and (pointer: coarse)").matches||(navigator.maxTouchPoints>0&&innerWidth<1100);
+const LITE=TOUCH&&((navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4));
+document.documentElement.classList.toggle("touch",TOUCH); document.documentElement.classList.toggle("lite",LITE);
 const PH=Object.fromEntries(PHASES.map(p=>[p.k,p]));
 const BY=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 
@@ -62,7 +65,10 @@ const VIEWS=[["home","Home"],["mission","Mission"],["tracker","Tracker"],["daily
 if(typeof WIZARD!=="undefined") VIEWS.splice(1,0,["start","Start"]);
 const nav=document.getElementById("nav"), onav=document.getElementById("overlay-nav"), overlay=document.getElementById("overlay");
 nav.innerHTML=VIEWS.map(([k,n])=>`<button class="tab" role="tab" id="tab-${k}" data-view="${k}" aria-selected="false">${n}</button>`).join("");
-onav.innerHTML=VIEWS.map(([k,n])=>`<button data-view="${k}">${n}</button>`).join("");
+const NAVG=[["Start here",["home","start","mission"]],["Plan",["plan","tracker","board"]],["Do",["daily","inbox","parts"]],["Learn",["learn","books","skills","community","cred"]],["Grow",["port","apply"]],["Settings",["console"]]];
+const NAVD={home:"The card deck: every page at a glance",start:"Answer 7 questions and the journal rebuilds around you",mission:"The whole roadmap on one page: phases, countdowns, deadlines",plan:"How the hours work, and each phase explained",tracker:"Every project and milestone with its status and notes",board:"The same items as cards: to do, doing, done",daily:"Tick the time blocks you worked; see your % per day",inbox:"Pinned links, plus mail and notifications if you connect them",parts:"What you own and what to buy, in the order you need it",learn:"Courses and docs for each stage, free first",books:"Books worth reading, with the chapters you need",skills:"Side skills learned just before the project needs them",community:"Forums and groups where experts answer questions",cred:"Certificates that test real skill, and when to take them",port:"Turn each project into a repo, video and CV line",apply:"Grad school, jobs or your own product: routes and dates",console:"Edit your profile, dates, items, sync and backups"};
+const VNAME=Object.fromEntries(VIEWS);
+onav.innerHTML=NAVG.map(([g,ks])=>{const items=ks.filter(k=>VNAME[k]); return items.length?`<div class="onav-g"><div class="onav-h">${g}</div>${items.map(k=>`<button data-view="${k}"><b>${VNAME[k]}</b><small>${NAVD[k]||""}</small></button>`).join("")}</div>`:"";}).join("");
 const REDUCE=matchMedia("(prefers-reduced-motion: reduce)").matches;
 let currentView=null, swapTimer=null;
 const replay=(el,cls)=>{el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);};
@@ -71,7 +77,7 @@ function swap(v){
   onav.querySelectorAll("button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===v));
   window.scrollTo({top:0,behavior:"instant"});
   const el=document.getElementById("view-"+v); if(!REDUCE) replay(el,"enter");
-  currentView=v; homeMode(v==="home"); requestAnimationFrame(()=>{window.armReveals&&window.armReveals(el); window.parallaxRefresh&&window.parallaxRefresh();});
+  currentView=v; renderView(v); homeMode(v==="home"); requestAnimationFrame(()=>{window.armReveals&&window.armReveals(el); window.parallaxRefresh&&window.parallaxRefresh();});
 }
 function show(v){
   if(!VIEWS.some(([k])=>k===v)) v="mission";
@@ -324,7 +330,7 @@ function renderDeck(){ requestAnimationFrame(bwFit);
 /* home: greeting first, then the deck; wheel/swipe moves the cards sideways */
 const HM={on:false,x:0,tx:0,max:0,raf:0,dealt:false,visits:0,timer:0,drag:null,moved:0};
 function hmGreeting(){const h=new Date().getHours(); return h<5?"Still up":h<12?"Good morning":h<17?"Good afternoon":h<22?"Good evening":"Good night";}
-function hmMeasure(){const r=document.getElementById("deck"), st=document.getElementById("hm-stage"); if(!r||!st) return; HM.max=Math.max(0,r.scrollWidth-st.clientWidth); HM.tx=Math.min(HM.max,Math.max(0,HM.tx));}
+function hmMeasure(){const r=document.getElementById("deck"), st=document.getElementById("hm-stage"); if(!r||!st) return; HM.sw=st.clientWidth; HM.cx=[...r.children].map(c=>c.offsetLeft+c.offsetWidth/2); HM.max=Math.max(0,r.scrollWidth-st.clientWidth); HM.tx=Math.min(HM.max,Math.max(0,HM.tx));}
 function homeMode(on){
   const hm=document.getElementById("hm"); if(!hm) return;
   document.documentElement.classList.toggle("on-home",on);
@@ -340,21 +346,23 @@ function homeMode(on){
 }
 function hmTick(){
   if(!HM.on) return;
-  HM.x+=(HM.tx-HM.x)*(REDUCE?1:.16);
+  HM.x+=(HM.tx-HM.x)*(REDUCE?1:.18); if(Math.abs(HM.tx-HM.x)<.4) HM.x=HM.tx;
   const r=document.getElementById("deck"), st=document.getElementById("hm-stage");
   if(r&&st){ r.style.transform=`translate3d(${(-HM.x).toFixed(1)}px,0,0)`;
-    const sr=st.getBoundingClientRect(), mid=sr.left+sr.width/2; let best=0,bd=1e9;
-    [...r.children].forEach((c,i)=>{const cr=c.getBoundingClientRect(), cc=cr.left+cr.width/2, off=(cc-mid)/sr.width; if(Math.abs(cc-mid)<bd){bd=Math.abs(cc-mid); best=i;}
-      if(HM.dealt&&!REDUCE){c.style.setProperty("--ry",(Math.max(-1,Math.min(1,off))*-26).toFixed(2)+"deg"); c.style.setProperty("--sc",(1-Math.min(1,Math.abs(off))*.14).toFixed(3)); c.style.setProperty("--sx",(50+off*120).toFixed(1)+"%");}});
-    HM.best=best; if(HM.drag) HM.idx=best; document.getElementById("hm-count").textContent=String(best+1).padStart(2,"0")+" / "+String(DECK.length).padStart(2,"0");
+    if(!HM.cx||HM.cx.length!==r.children.length) hmMeasure();
+    const w=HM.sw||st.clientWidth, mid=w/2; let best=0,bd=1e9;
+    (HM.cx||[]).forEach((cx,i)=>{const c=r.children[i]; const cc=cx-HM.x, off=(cc-mid)/w; if(Math.abs(cc-mid)<bd){bd=Math.abs(cc-mid); best=i;}
+      if(HM.dealt&&!REDUCE){const ry=(Math.max(-1,Math.min(1,off))*-26).toFixed(1); if(c.__ry!==ry){c.__ry=ry; c.style.setProperty("--ry",ry+"deg"); c.style.setProperty("--sc",(1-Math.min(1,Math.abs(off))*.14).toFixed(3)); c.style.setProperty("--sx",(50+off*120).toFixed(0)+"%");}}});
+    if(HM.best!==best||!HM.cntSet){HM.cntSet=1; HM.best=best; document.getElementById("hm-count").textContent=String(best+1).padStart(2,"0")+" / "+String(DECK.length).padStart(2,"0");}
+    if(HM.drag) HM.idx=best;
     document.getElementById("hm-prog").style.width=(HM.max?HM.x/HM.max*100:0).toFixed(1)+"%";
   }
-  
-  HM.raf=requestAnimationFrame(hmTick);
+  if(HM.x!==HM.tx||HM.drag||!HM.dealt){HM.raf=requestAnimationFrame(hmTick);} else HM.raf=0;
 }
-function hmDealNow(){const hm=document.getElementById("hm"); if(!hm||HM.dealt) return; clearTimeout(HM.timer); hm.classList.remove("is-greeting"); hm.classList.add("is-dealt"); HM.dealt=true; hmMeasure();}
-const hmPush=dv=>{if(!HM.on) return; if(!HM.dealt){hmDealNow(); return;} hmMeasure(); HM.tx=Math.min(HM.max,Math.max(0,HM.tx+dv));};
-function hmGo(i){const r=document.getElementById("deck"), st=document.getElementById("hm-stage"); if(!r||!st||!r.children.length) return; hmMeasure(); HM.idx=Math.max(0,Math.min(r.children.length-1,i)); const c=r.children[HM.idx]; HM.tx=Math.min(HM.max,Math.max(0,c.offsetLeft+c.offsetWidth/2-st.clientWidth/2));}
+function hmKick(){if(HM.on&&!HM.raf) HM.raf=requestAnimationFrame(hmTick);}
+function hmDealNow(){const hm=document.getElementById("hm"); if(!hm||HM.dealt) return; clearTimeout(HM.timer); hm.classList.remove("is-greeting"); hm.classList.add("is-dealt"); HM.dealt=true; hmMeasure(); hmKick();}
+const hmPush=dv=>{if(!HM.on) return; if(!HM.dealt){hmDealNow(); return;} hmMeasure(); HM.tx=Math.min(HM.max,Math.max(0,HM.tx+dv)); hmKick();};
+function hmGo(i){const r=document.getElementById("deck"), st=document.getElementById("hm-stage"); if(!r||!st||!r.children.length) return; hmMeasure(); HM.idx=Math.max(0,Math.min(r.children.length-1,i)); const c=r.children[HM.idx]; HM.tx=Math.min(HM.max,Math.max(0,c.offsetLeft+c.offsetWidth/2-st.clientWidth/2)); hmKick();}
 let hmAcc=0, hmLock=0;
 addEventListener("wheel",e=>{if(!HM.on) return; if(e.target.closest&&e.target.closest(".peek,.menu-overlay,.nav")) return; e.preventDefault(); if(!HM.dealt){hmDealNow(); return;} const dv=(Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:e.deltaX)*(e.deltaMode===1?32:e.deltaMode===2?400:1); const now=performance.now(); if(HM.idx==null) HM.idx=HM.best||0;
   if(Math.abs(dv)>=50){hmAcc=0; hmGo(HM.idx+(dv>0?1:-1)); hmLock=now+90; return;}
@@ -365,7 +373,7 @@ addEventListener("touchstart",e=>{if(!HM.on) return; const t=e.touches[0]; HM.dr
 addEventListener("touchmove",e=>{if(!HM.on||!HM.drag) return; const t=e.touches[0], dx=HM.drag.x-t.clientX, dy=HM.drag.y-t.clientY; HM.drag={x:t.clientX,y:t.clientY}; HM.moved+=Math.abs(dx)+Math.abs(dy); e.preventDefault(); hmPush((Math.abs(dy)>Math.abs(dx)?dy:dx)*1.6);},{passive:false});
 addEventListener("touchend",()=>{if(HM.on&&HM.drag&&HM.dealt) hmGo(HM.best||0); HM.drag=null;},{passive:true});
 document.addEventListener("click",e=>{if(HM.on&&HM.moved>12&&e.target.closest(".bw")){e.stopPropagation(); e.preventDefault(); HM.moved=0;}},true);
-addEventListener("resize",()=>{if(HM.on) hmMeasure();});
+addEventListener("resize",()=>{if(HM.on){hmMeasure(); HM.cntSet=0; [...document.querySelectorAll("#deck .bw")].forEach(c=>c.__ry=null); hmKick();}});
 
 function renderLearn(){
   const out=TRACKS.filter(t=>!lTrack.value||t.k===lTrack.value).map(t=>{const rs=RES.filter(r=>r.track===t.k&&(!on(lFree)||r.cost==="Free")&&(!on(lPaid)||r.cost==="Paid")&&(!on(lBest)||r.best)); if(!rs.length) return "";
@@ -412,7 +420,10 @@ document.addEventListener("click",e=>{ if(e.target.closest("select,a")) return; 
 ta.addEventListener("input",()=>{document.getElementById("pk-saved").textContent="Typing…"; clearTimeout(noteTimer); noteTimer=setTimeout(flushNotes,900);});
 function flushNotes(){clearTimeout(noteTimer); if(!openId||!canWrite) return; const v=ta.value; if((prog[openId]?.notes||"")===v) return; write(openId,{notes:v}); document.getElementById("pk-saved").textContent="Saved";}
 
-function renderAll(){renderDeck(); renderBooks(); renderParts(); renderMission(); renderTracker(); renderStats(); renderBoard(); renderPlan(); renderApply(); renderSkills(); renderDaily&&renderDaily(); if(openId&&!peek.hidden) fillPeek();}
+const VR={mission:()=>renderMission(),tracker:()=>{renderTracker(); renderStats(); trackerHint();},board:()=>renderBoard(),plan:()=>renderPlan(),apply:()=>renderApply(),skills:()=>renderSkills(),books:()=>renderBooks(),parts:()=>renderParts(),learn:()=>renderLearn(),cred:()=>renderCred(),port:()=>renderPort(),community:()=>renderCommunity(),daily:()=>renderDaily()};
+const VDIRTY=new Set(Object.keys(VR));
+function renderView(v){ if(VR[v]&&VDIRTY.has(v)){VDIRTY.delete(v); VR[v]();} }
+function renderAll(){renderDeck(); Object.keys(VR).forEach(v=>VDIRTY.add(v)); renderView(currentView); if(openId&&!peek.hidden) fillPeek();}
 function setSync(onl,text){document.getElementById("syncdot").className="dot"+(onl?" on":""); document.getElementById("synctext").textContent=text;}
 function applyReadOnly(){document.getElementById("readonly").hidden=canWrite; renderAll();}
 
@@ -444,7 +455,7 @@ window.armReveals=armReveals;
 (function(){const L=document.getElementById("loader"), P=document.getElementById("loader-pct"); if(!L) return;
   if(REDUCE){L.remove(); return;}
   let p=0; const mark=L.querySelector(".mark");
-  const tick=setInterval(()=>{p=Math.min(100,p+Math.ceil(Math.random()*9)); P.textContent=p+"%"; mark.style.setProperty("--p",p+"%"); if(p>=100){clearInterval(tick); setTimeout(()=>{L.classList.add("done"); setTimeout(()=>L.remove(),800);},180);}},45);
+  const tick=setInterval(()=>{p=Math.min(100,p+(TOUCH?50:Math.ceil(Math.random()*9))); P.textContent=p+"%"; mark.style.setProperty("--p",p+"%"); if(p>=100){clearInterval(tick); setTimeout(()=>{L.classList.add("done"); setTimeout(()=>L.remove(),TOUCH?320:800);},TOUCH?40:180);}},45);
 })();
 
 
@@ -503,10 +514,11 @@ document.addEventListener("click",e=>{const b=e.target.closest(".goal[data-phase
 /* WebGL flight scene */
 scene=(function(){
   const api={}; const canvas=document.getElementById("scene");
+  const init=()=>{
   if(!window.THREE){canvas.hidden=true; return api;}
-  let renderer; try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch(e){canvas.hidden=true; return api;}
+  let renderer; try{renderer=new THREE.WebGLRenderer({canvas,antialias:!TOUCH,powerPreference:"low-power"});}catch(e){canvas.hidden=true; return api;}
   const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
+  renderer.setPixelRatio(LITE?.5:TOUCH?Math.min(window.devicePixelRatio||1,1)*.65:Math.min(window.devicePixelRatio||1,1.75));
   const S=new THREE.Scene(), cam=new THREE.PerspectiveCamera(55,1,0.1,400);
   S.fog=new THREE.Fog(0x000000,28,130);
   const css=n=>getComputedStyle(root).getPropertyValue(n).trim();
@@ -522,7 +534,7 @@ scene=(function(){
     g.add(new THREE.Mesh(new THREE.TorusGeometry(3.2,.08,8,80),m), new THREE.Mesh(new THREE.TorusGeometry(3.9,.03,6,80),m2));
     g.position.copy(p); const t=curve.getTangent((i+1)/(P.length+1)); g.lookAt(p.clone().add(t)); S.add(g); return {g,m,m2,v:ringVars[i]};});
   const grid=new THREE.GridHelper(400,100); grid.position.y=-6; grid.material.transparent=true; grid.material.opacity=.18; S.add(grid);
-  const N=reduce?500:1400, pos=new Float32Array(N*3); for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*260;pos[i*3+1]=Math.random()*60-4;pos[i*3+2]=(Math.random()-.5)*160;}
+  const N=reduce||LITE?320:TOUCH?600:1400, pos=new Float32Array(N*3); for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*260;pos[i*3+1]=Math.random()*60-4;pos[i*3+2]=(Math.random()-.5)*160;}
   const pg=new THREE.BufferGeometry(); pg.setAttribute("position",new THREE.BufferAttribute(pos,3));
   const pm=new THREE.PointsMaterial({size:.18,transparent:true,opacity:.6}); const pts=new THREE.Points(pg,pm); S.add(pts);
   const drone=new THREE.Group(); const lineMat=new THREE.LineBasicMaterial(); const fillMat=new THREE.MeshBasicMaterial({transparent:true,opacity:.2});
@@ -550,7 +562,7 @@ scene=(function(){
   let lastSY=window.scrollY, vel=0, spS=0;
   const sm={off:-.33,df:1};
   function place(dt){
-    sm.df+=((onHome?1:1.15)-sm.df)*Math.min(1,dt*2.2);
+    sm.df+=((onHome?1:1.8)-sm.df)*Math.min(1,dt*2.2);
     const maxS=Math.max(1,document.documentElement.scrollHeight-innerHeight), sp=Math.min(1,Math.max(0,window.scrollY/maxS));
     const loop=loopMode; let u=0, wrapped=false;
     if(loop){u=((Date.now()/1000)%LOOP)/LOOP; loopU=u; wrapped=false; lastU=u; spS=u;} else spS+=(sp-spS)*(reduce?1:Math.min(1,dt*4));
@@ -587,10 +599,14 @@ scene=(function(){
   addEventListener("resize",resize); resize(); api.recolor();
   cam.position.set(home*0,10,30); place(1); cam.position.copy(camPos); look.copy(drone.position); cam.lookAt(look); draw();
   { let last=performance.now(), running=!document.hidden;
-    const frame=now=>{ if(!running) return; const dt=Math.min(.05,(now-last)/1000); last=now; if(reduce&&!loopMode){requestAnimationFrame(frame); return;} clock+=dt; props.forEach((b,i)=>b.rotation.y+=dt*(i%2?-38:38)); pts.rotation.y+=dt*.004; place(dt); draw(); requestAnimationFrame(frame); };
+    let FI=LITE?1000/24:TOUCH?1000/30:0; let lastDraw=0; const PR0=renderer.getPixelRatio(); let gE=0,gN=0,gL=0;
+    const frame=now=>{ if(!running) return; if(FI&&now-lastDraw<FI-2){requestAnimationFrame(frame); return;} lastDraw=now; const dt=Math.min(.08,(now-last)/1000); last=now; if(reduce&&!loopMode){requestAnimationFrame(frame); return;} clock+=dt; props.forEach((b,i)=>b.rotation.y+=dt*(i%2?-38:38)); pts.rotation.y+=dt*.004; const t0=performance.now(); place(dt); draw(); const c=performance.now()-t0; gE=gN?gE*.9+c*.1:c; if(++gN>40&&gE>(TOUCH?16:24)&&gL<3){gL++; gN=0; if(gL<3){renderer.setPixelRatio(PR0*(gL===1?.7:.5)); resize();} else FI=Math.max(FI,1000/15);} requestAnimationFrame(frame); };
     document.addEventListener("visibilitychange",()=>{running=!document.hidden; if(running){last=performance.now(); requestAnimationFrame(frame);}});
     requestAnimationFrame(frame);
   }
+  api.setView&&api.setView(currentView);
+  };
+  requestAnimationFrame(()=>setTimeout(init,0));
   return api;
 })();
 
@@ -761,7 +777,7 @@ const fld=(id,label,val,type="text",extra="")=>`<label>${esc(label)}<input id="$
 function renderConsole(){
   const pf=document.getElementById("cs-profile-f"); if(!pf) return;
   pf.innerHTML=fld("cp-name","Full name",PROFILE.name)+fld("cp-first","Name in the greeting",PROFILE.first)+fld("cp-title","Page title",PROFILE.title)+
-    fld("cp-w1","Big title, line 1",(PROFILE.titleWords||[])[0])+fld("cp-w2","Big title, line 2",(PROFILE.titleWords||[])[1])+fld("cp-code","Card code",PROFILE.code)+
+    fld("cp-w1","Big title, line 1",(PROFILE.titleWords||[])[0])+fld("cp-w2","Big title, line 2",(PROFILE.titleWords||[])[1])+fld("cp-w3","Big title, line 3 (optional)",(PROFILE.titleWords||[])[2]||"")+fld("cp-code","Short code printed on cards",PROFILE.code)+
     fld("cp-cur","Currency symbol",PROFILE.currency)+fld("cp-start","Journey starts",PROFILE.start,"date")+fld("cp-end","Journey ends",PROFILE.end,"date")+
     `<label>Week starts on<select id="cp-ws">${DN.map((n,i)=>`<option value="${i}" ${+PROFILE.weekStart===i?"selected":""}>${n}</option>`).join("")}</select></label>`+
     `<details class="cs-more"><summary>Page text</summary>${Object.keys(TEXT).map(k=>`<label>${esc(k)}<textarea data-tk="${esc(k)}" rows="2">${esc(TEXT[k])}</textarea></label>`).join("")}</details>`;
@@ -788,7 +804,7 @@ function renderConsole(){
     if(c.daily.slot!==+DAILY.slot||c.daily.from!==DAILY.from){if(!confirmSoft("cs-daily","Changing the start time or square length shifts squares you already ticked. Press save again to confirm.")) return;}
     saveCustom(c,"Daily tracker saved");};
   document.getElementById("cs-profile").onsubmit=e=>{e.preventDefault(); const c=clone(CUSTOM);
-    c.profile=Object.assign({},c.profile,{name:val("cp-name"),first:val("cp-first"),title:val("cp-title"),titleWords:[val("cp-w1"),val("cp-w2")],code:val("cp-code"),currency:val("cp-cur"),start:val("cp-start")||PROFILE.start,end:val("cp-end")||PROFILE.end,weekStart:+val("cp-ws")});
+    c.profile=Object.assign({},c.profile,{name:val("cp-name"),first:val("cp-first"),title:val("cp-title"),titleWords:[val("cp-w1"),val("cp-w2"),val("cp-w3")].filter(Boolean),code:val("cp-code"),currency:val("cp-cur"),start:val("cp-start")||PROFILE.start,end:val("cp-end")||PROFILE.end,weekStart:+val("cp-ws")});
     const t={}; document.querySelectorAll("[data-tk]").forEach(x=>{if(x.value!==TEXT[x.dataset.tk]) t[x.dataset.tk]=x.value;}); c.text=Object.assign({},c.text,t);
     saveCustom(c,"Profile saved");};
   document.getElementById("cs-cd").onsubmit=e=>{e.preventDefault(); const c=clone(CUSTOM); c.countdowns=[0,1,2].map(i=>({label:val("cd-l"+i),date:val("cd-d"+i),hard:document.getElementById("cd-h"+i).checked?1:0})).filter(x=>x.date); saveCustom(c,"Countdowns saved");};
@@ -877,6 +893,14 @@ function dbHook(db){
 function dailyStreak(){let n=0; for(let dt=new Date(today);;dt=addDays(dt,-1)){if(hoursOf(iso(dt))>0) n++; else if(+dt!==+today) break; if(n>3660) break;} return n;}
 function weekPct(){const w=weekStartOf(today); let th=0,tt=0; for(let j=0;j<7;j++){const dt=addDays(w,j); th+=hoursOf(iso(dt)); tt+=targetOf(dt);} return tt?Math.round(th/tt*100):0;}
 renderConsole();
+function trackerHint(){const host=document.getElementById("view-tracker"); if(!host) return; let h=document.getElementById("tr-hint"); const started=ITEMS.some(i=>st(i.id)>0);
+  if(started){if(h) h.remove(); return;} if(!h){h=document.createElement("p"); h.id="tr-hint"; h.className="empty-hint glass"; const vh=host.querySelector(".view-head"); vh.insertAdjacentElement("afterend",h);}
+  h.innerHTML="<b>Nothing started yet.</b> Open any item below, set its status to <i>In progress</i>, and your progress chart starts filling in.";}
+function stage2Init(){
+  const done=!!(CUSTOM&&CUSTOM.wizard&&CUSTOM.wizard.built), bar=document.getElementById("demo-bar");
+  if(bar) bar.hidden=!(TEXT.demoNote&&!done);
+  document.querySelectorAll("[data-t]").forEach(el=>{if(!el.innerHTML.trim()) el.classList.add("is-empty");});
+}
 (function(){const sel=document.getElementById("cs-bg"); if(!sel) return; let m="loop"; try{m=localStorage.getItem(PROFILE.key+"-bg")||PROFILE.bg||"loop";}catch(e){} sel.value=m; sel.onchange=()=>{try{localStorage.setItem(PROFILE.key+"-bg",sel.value);}catch(e){} scene.setView&&scene.setView(currentView); dstat("Background updated.");};})();
 if(window.artifactHost&&artifactHost.use){["cs-sync","cs-data"].forEach(id=>{const el=document.getElementById(id); if(el) el.innerHTML=id==="cs-sync"?'<h2>Sync</h2><p class="cs-note">This copy runs as an artifact and already syncs through your account. Gist sync and backups are available in the GitHub version.</p>':'';}); const d=document.getElementById("cs-data"); if(d) d.hidden=true;}
 window.__J={get scene(){return scene;},ITEMS,PHASES,RES,BOOKS,HARD,COUNTDOWNS,DAILY,PROFILE,TEXT,get daily(){return daily;},get prog(){return prog;},bundle,mergeBundle};
@@ -1105,7 +1129,7 @@ const SRC={
   rd:{n:"Reddit",icon:"R",help:`Shows unread messages and your saved posts. Register an <i>installed app</i> at <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener">reddit.com/prefs/apps ↗</a> with this exact redirect URI: <code>${esc(location.origin+location.pathname)}</code>, then paste its client ID. Access lasts an hour.`,fields:[["client","Reddit app client ID","text"]]}
 };
 function ibUnread(){return ibItems.filter(i=>i.unread&&(IB[i.src]||{}).on!==false&&!(i.src!=="pin"&&!(IB[i.src]||{}).token)).length+Object.values(pins).filter(p=>!p.del&&!p.done).length;}
-function ibBadge(){const n=ibUnread(); [document.getElementById("tab-inbox"),...document.querySelectorAll('#overlay-nav [data-view="inbox"],#foot-nav [data-go="inbox"]')].forEach(t=>{if(!t) return; t.textContent="Inbox"+(n?` · ${n}`:"");});}
+function ibBadge(){const n=ibUnread(); [document.getElementById("tab-inbox"),document.querySelector('#overlay-nav [data-view="inbox"] b')||document.querySelector('#overlay-nav [data-view="inbox"]'),...document.querySelectorAll('#foot-nav [data-go="inbox"]')].forEach(t=>{if(!t) return; t.textContent="Inbox"+(n?` · ${n}`:"");});}
 function renderInbox(){
   const host=document.getElementById("ib-src"); if(!host) return;
   host.innerHTML=Object.entries(SRC).map(([k,s])=>{const c=IB[k]||{}, conn=!!c.token&&(!c.exp||c.exp>Date.now()), st=ibStatus[k]||"";
@@ -1199,7 +1223,7 @@ function rdConnect(){
   if(!IN_ARTIFACT){ ibRefresh(); setInterval(()=>{if(!document.hidden) ibRefresh();},10*60000); }
 })();
 
-renderLearn(); renderCred(); renderPort(); renderCommunity(); renderAll(); paintToggle();
+renderAll(); paintToggle(); stage2Init();
 let startView="home"; try{if(sessionStorage.getItem(PROFILE.key+"-goto")){startView=sessionStorage.getItem(PROFILE.key+"-goto"); sessionStorage.removeItem(PROFILE.key+"-goto");}}catch(e){}
 swap(startView); scene.setView&&scene.setView(startView);
 setSync(false,"This browser");
