@@ -21,7 +21,7 @@ def js(m):
     return "<script>\n" + code + "\n</script>"
 
 html = re.sub(r'<link rel="stylesheet" href="((?:css)/[^"]+)">', css, html)
-html = re.sub(r'<script src="((?:js|data|vendor)/[^"]+)"></script>', js, html)
+html = re.sub(r'<script (?:defer )?src="((?:js|data|vendor)/[^"]+)"></script>', js, html)
 out = ROOT / "dist"; out.mkdir(exist_ok=True)
 (out / "journal.html").write_text(html, encoding="utf-8")
 print("wrote", out / "journal.html", f"{len(html)//1024} KB")
