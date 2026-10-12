@@ -351,3 +351,4 @@ html.touch .hm-legend summary::after{content:"Card guide";display:block;font:600
 /* card guide button: a labelled pill on every device (no lone "?" circle) */
 .hm-legend summary{width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:0;display:flex;align-items:center}
 .hm-legend summary::after{content:"Card guide";display:block;font:600 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;margin-top:-1px}
+.hm-greet.no-tr{transition:none!important}
