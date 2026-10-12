@@ -327,3 +327,5 @@ html.touch .loader.done{animation-duration:.3s}html.touch .loader{animation-dela
 /* books hero: the cover stands on the shelf instead of sinking into it; shelf sits inside the panel */
 #view-books .bk-stage{padding-bottom:22px}
 #view-books .bk-stage .bk-ledge.big{margin:16px 0 0}
+/* phones and small tablets: the shrunken title sits below the header buttons instead of under them */
+@media (max-width:700px) and (min-height:520px){.hm.is-dealt .hm-greet{top:44px!important}}
