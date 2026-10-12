@@ -328,7 +328,7 @@ html.touch .loader.done{animation-duration:.3s}html.touch .loader{animation-dela
 #view-books .bk-stage{padding-bottom:22px}
 #view-books .bk-stage .bk-ledge.big{margin:16px 0 0}
 /* phones and small tablets: the shrunken title sits below the header buttons instead of under them */
-@media (max-width:700px) and (min-height:520px){.hm.is-dealt .hm-greet{top:44px!important}}
+@media (max-width:700px) and (min-height:520px){.hm.is-dealt .hm-greet{top:44px}}
 /* home HUD on touch screens: a swipe hint instead of the mouse wheel, and the card guide as a labelled pill (no lone "?" circle) */
 .hm-sw,.hm-hint-t{display:none}
 .hm-sw{width:22px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;animation:hmSwipe 1.8s ease-in-out infinite}
@@ -348,3 +348,6 @@ html.touch .hm-legend summary::after{content:"Card guide";display:block;font:600
 /* small phones: the greeting chip stays on one line */
 @media (max-width:420px){#hm-greet .lx-chip{letter-spacing:.06em!important;font-size:11px!important;white-space:nowrap;max-width:calc(100vw - 32px);padding-left:8px;padding-right:12px}}
 @media (max-width:345px){#hm-greet .lx-chip{font-size:10px!important;letter-spacing:.04em!important}}
+/* card guide button: a labelled pill on every device (no lone "?" circle) */
+.hm-legend summary{width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:0;display:flex;align-items:center}
+.hm-legend summary::after{content:"Card guide";display:block;font:600 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;margin-top:-1px}

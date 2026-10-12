@@ -900,7 +900,27 @@ function stage2Init(){
   const done=!!(CUSTOM&&CUSTOM.wizard&&CUSTOM.wizard.built), bar=document.getElementById("demo-bar");
   if(bar) bar.hidden=!(TEXT.demoNote&&!done);
   document.querySelectorAll("[data-t]").forEach(el=>{if(!el.innerHTML.trim()) el.classList.add("is-empty");});
+  greetFitInit();
 }
+/* Keep the shrunken home title between the header buttons and the cards on any screen size. */
+function greetFit(){const hm=document.getElementById("hm"), g=hm&&hm.querySelector(".hm-greet"), nm=document.getElementById("hm-name"); if(!g||!nm) return;
+  if(!hm.classList.contains("is-dealt")){g.style.removeProperty("top"); g.style.removeProperty("transform"); return;}
+  const prevT=""; g.style.transition="none";
+  const R=e=>e.getBoundingClientRect(), n=R(nm), gr=R(g);
+  const btns=[...document.querySelectorAll(".top button,.top a")].filter(b=>b.offsetParent&&(b.checkVisibility?b.checkVisibility({visibilityProperty:true,opacityProperty:true}):getComputedStyle(b).visibility!=="hidden")).map(R).filter(b=>b.width&&!(b.right<n.left-8||b.left>n.right+8));
+  const topLim=Math.max(14,...btns.map(b=>b.bottom+8));
+  const cards=[...document.querySelectorAll("#deck .bw")].map(R).filter(c=>c.width&&c.right>0&&c.left<innerWidth);
+  const botLim=cards.length?Math.min(...cards.map(c=>c.top))-12:innerHeight*0.3;
+  const m=getComputedStyle(g).transform; let s=1; if(m&&m!=="none"){const v=m.match(/matrix\(([^)]+)\)/); if(v) s=parseFloat(v[1].split(",")[0])||1;}
+  const offN=n.top-gr.top, H=n.height, avail=botLim-topLim;
+  if(n.top>=topLim-1&&n.bottom<=botLim){g.style.transition=prevT; return;}
+  const ns=Math.max(0.18,Math.min(s,avail>0?s*avail/H:s));
+  const top0=parseFloat(getComputedStyle(g).top)||0, newTop=top0+(topLim-n.top)+offN*(1-ns/s)*0;
+  g.style.transform=`translate(-50%,0) scale(${ns})`; g.style.top=(top0+(topLim-(gr.top+offN*ns/s)))+"px";
+  void g.offsetWidth; g.style.transition=prevT;}
+function greetFitInit(){const hm=document.getElementById("hm"); if(!hm) return; let t=0; let t2=0; const later=()=>{clearTimeout(t); clearTimeout(t2); t=setTimeout(greetFit,1600); t2=setTimeout(greetFit,3200);};
+  new MutationObserver(later).observe(hm,{attributes:true,attributeFilter:["class"]});
+  addEventListener("resize",()=>{clearTimeout(t); clearTimeout(t2); t=setTimeout(()=>{const g=document.querySelector("#hm .hm-greet"); if(g){g.style.removeProperty("top"); g.style.removeProperty("transform");} t2=setTimeout(greetFit,1300);},300);}); later();}
 (function(){const sel=document.getElementById("cs-bg"); if(!sel) return; let m="loop"; try{m=localStorage.getItem(PROFILE.key+"-bg")||PROFILE.bg||"loop";}catch(e){} sel.value=m; sel.onchange=()=>{try{localStorage.setItem(PROFILE.key+"-bg",sel.value);}catch(e){} scene.setView&&scene.setView(currentView); dstat("Background updated.");};})();
 if(window.artifactHost&&artifactHost.use){["cs-sync","cs-data"].forEach(id=>{const el=document.getElementById(id); if(el) el.innerHTML=id==="cs-sync"?'<h2>Sync</h2><p class="cs-note">This copy runs as an artifact and already syncs through your account. Gist sync and backups are available in the GitHub version.</p>':'';}); const d=document.getElementById("cs-data"); if(d) d.hidden=true;}
 window.__J={get scene(){return scene;},ITEMS,PHASES,RES,BOOKS,HARD,COUNTDOWNS,DAILY,PROFILE,TEXT,get daily(){return daily;},get prog(){return prog;},bundle,mergeBundle};
