@@ -516,9 +516,9 @@ scene=(function(){
   const api={}; const canvas=document.getElementById("scene");
   const init=()=>{
   if(!window.THREE){canvas.hidden=true; return api;}
-  let renderer; try{renderer=new THREE.WebGLRenderer({canvas,antialias:!TOUCH,powerPreference:"low-power"});}catch(e){canvas.hidden=true; return api;}
+  let renderer; try{renderer=new THREE.WebGLRenderer({canvas,antialias:!LITE,powerPreference:TOUCH?"default":"low-power"});}catch(e){canvas.hidden=true; return api;}
   const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  renderer.setPixelRatio(LITE?.5:TOUCH?Math.min(window.devicePixelRatio||1,1)*.65:Math.min(window.devicePixelRatio||1,1.75));
+  const DPR=window.devicePixelRatio||1; renderer.setPixelRatio(TOUCH?Math.min(DPR,Math.max(1,Math.min(LITE?1.5:2,Math.sqrt((LITE?2.0e6:3.2e6)/Math.max(1,innerWidth*innerHeight))))):Math.min(DPR,1.75));
   const S=new THREE.Scene(), cam=new THREE.PerspectiveCamera(55,1,0.1,400);
   S.fog=new THREE.Fog(0x000000,28,130);
   const css=n=>getComputedStyle(root).getPropertyValue(n).trim();
@@ -600,7 +600,7 @@ scene=(function(){
   cam.position.set(home*0,10,30); place(1); cam.position.copy(camPos); look.copy(drone.position); cam.lookAt(look); draw();
   { let last=performance.now(), running=!document.hidden;
     let FI=LITE?1000/24:TOUCH?1000/30:0; let lastDraw=0; const PR0=renderer.getPixelRatio(); let gE=0,gN=0,gL=0;
-    const frame=now=>{ if(!running) return; if(FI&&now-lastDraw<FI-2){requestAnimationFrame(frame); return;} lastDraw=now; const dt=Math.min(.08,(now-last)/1000); last=now; if(reduce&&!loopMode){requestAnimationFrame(frame); return;} clock+=dt; props.forEach((b,i)=>b.rotation.y+=dt*(i%2?-38:38)); pts.rotation.y+=dt*.004; const t0=performance.now(); place(dt); draw(); const c=performance.now()-t0; gE=gN?gE*.9+c*.1:c; if(++gN>40&&gE>(TOUCH?16:24)&&gL<3){gL++; gN=0; if(gL<3){renderer.setPixelRatio(PR0*(gL===1?.7:.5)); resize();} else FI=Math.max(FI,1000/15);} requestAnimationFrame(frame); };
+    const frame=now=>{ if(!running) return; if(FI&&now-lastDraw<FI-2){requestAnimationFrame(frame); return;} lastDraw=now; const dt=Math.min(.08,(now-last)/1000); last=now; if(reduce&&!loopMode){requestAnimationFrame(frame); return;} clock+=dt; props.forEach((b,i)=>b.rotation.y+=dt*(i%2?-38:38)); pts.rotation.y+=dt*.004; const t0=performance.now(); place(dt); draw(); const c=performance.now()-t0; gE=gN?gE*.9+c*.1:c; if(++gN>40&&gE>(TOUCH?16:24)&&gL<3){gL++; gN=0; if(gL<3){renderer.setPixelRatio(Math.max(Math.min(1,PR0),PR0*(gL===1?.8:.65))); resize();} else FI=Math.max(FI,1000/15);} requestAnimationFrame(frame); };
     document.addEventListener("visibilitychange",()=>{running=!document.hidden; if(running){last=performance.now(); requestAnimationFrame(frame);}});
     requestAnimationFrame(frame);
   }
