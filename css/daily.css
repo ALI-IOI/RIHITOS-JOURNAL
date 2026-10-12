@@ -329,3 +329,16 @@ html.touch .loader.done{animation-duration:.3s}html.touch .loader{animation-dela
 #view-books .bk-stage .bk-ledge.big{margin:16px 0 0}
 /* phones and small tablets: the shrunken title sits below the header buttons instead of under them */
 @media (max-width:700px) and (min-height:520px){.hm.is-dealt .hm-greet{top:44px!important}}
+/* home HUD on touch screens: a swipe hint instead of the mouse wheel, and the card guide as a labelled pill (no lone "?" circle) */
+.hm-sw,.hm-hint-t{display:none}
+.hm-sw{width:22px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;animation:hmSwipe 1.8s ease-in-out infinite}
+@keyframes hmSwipe{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+html.touch .hm .hm-hint{display:flex}
+html.touch .hm-hint i,html.touch .hm-hint-d{display:none}
+html.touch .hm-sw{display:block}
+html.touch .hm-hint-t{display:inline}
+html.touch .hm-legend summary{width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:0;letter-spacing:.12em}
+html.touch .hm-legend summary{display:flex;align-items:center}
+html.touch .hm-legend summary::after{content:"Card guide";display:block;font:600 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;margin-top:-1px}
+@media (max-width:380px){html.touch .hm-hint-t{display:none}}
+@media (prefers-reduced-motion:reduce){.hm-sw{animation:none}}
