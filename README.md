@@ -1,15 +1,14 @@
-# Rihito's Journal (private)
+# Rihito's Journal
 
 ## ▶ Open it
 
 | Where | Link |
 |---|---|
-| Website from this repo | [ali-ioi.github.io/RIHITOS-JOURNAL](https://ali-ioi.github.io/RIHITOS-JOURNAL/) (goes live once GitHub Pages is switched on, which needs GitHub Pro, free with the Student Developer Pack) |
-| On this computer | Open `index.html` in this folder (`D:\RIHITO\GITHUB\RIHITOS-JOURNAL\index.html`) |
-| Rihito's Journal IOI (public) | [ali-ioi.github.io/RIHITOS-JOURNAL-IOI](https://ali-ioi.github.io/RIHITOS-JOURNAL-IOI/) |
+| **Live site** | [ali-ioi.github.io/RIHITOS-JOURNAL](https://ali-ioi.github.io/RIHITOS-JOURNAL/) |
+| On this computer | Open `index.html` in this folder (`E:\RIHITO\GITHUB\RIHITOS-JOURNAL\index.html`) |
 
 My Flight Path 2029 tracker: Arduino → ESP32 → ROS 2 → drones → a research Masters.
-Built on the same app as the public Rihito's Journal IOI (RIHITOS-JOURNAL-IOI); only `data/journal.js` differs.
+Built on the same app as Rihito's Journal IOI (RIHITOS-JOURNAL-IOI, private); only `data/journal.js` differs.
 
 - Open `index.html`, or the GitHub Pages site for this repo.
 - On phones and tablets a lighter mode switches on by itself (no blur, lighter 3D background), so it stays smooth.
