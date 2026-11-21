@@ -5,7 +5,7 @@
 | Where | Link |
 |---|---|
 | **Live site** | [ali-ioi.github.io/RIHITOS-JOURNAL](https://ali-ioi.github.io/RIHITOS-JOURNAL/) |
-| On this computer | Open `index.html` in this folder (`E:\RIHITO\GITHUB\RIHITOS-JOURNAL\index.html`) |
+| On this computer | Open `index.html` in this folder |
 
 My Flight Path 2029 tracker: Arduino → ESP32 → ROS 2 → drones → a research Masters.
 Built on the same app as Rihito's Journal IOI (RIHITOS-JOURNAL-IOI, private); only `data/journal.js` differs.
